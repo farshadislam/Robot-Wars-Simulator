@@ -271,7 +271,7 @@ public class Battle {
      * @return True if yes, false otherwise
      */
     public boolean valid(int row, int column) {
-        if(row >0 && row < battle.length && column >0 && column < battle[0].length){
+        if(row >=0 && row < battle.length && column >=0 && column < battle[0].length){
             return true;
         }
         return false;
