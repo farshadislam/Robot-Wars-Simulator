@@ -1,50 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.text.*?>
-
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"  fx:controller="rw.app.MainController">
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="rw.app.MainController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="New" />
-            <MenuItem mnemonicParsing="false" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Close" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
-            <MenuItem mnemonicParsing="false" text="Revert" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Preferences…" />
+            <MenuItem fx:id="battleLoader" mnemonicParsing="false" onAction="#loadNewBattle" text="Load" />
+            <MenuItem fx:id="battleSaver" mnemonicParsing="false" onAction="#saveNewBattle" text="Save" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" text="Quit" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Edit">
-          <items>
-            <MenuItem mnemonicParsing="false" text="Undo" />
-            <MenuItem mnemonicParsing="false" text="Redo" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Cut" />
-            <MenuItem mnemonicParsing="false" text="Copy" />
-            <MenuItem mnemonicParsing="false" text="Paste" />
-            <MenuItem mnemonicParsing="false" text="Delete" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Select All" />
-            <MenuItem mnemonicParsing="false" text="Unselect All" />
-          </items>
-        </Menu>
+
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+            <MenuItem fx:id="battleHelp" mnemonicParsing="false" text="About MyHelloApp" />
           </items>
         </Menu>
       </menus>
@@ -53,14 +29,55 @@
       <items>
         <AnchorPane>
           <children>
-            <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Master" textAlignment="CENTER" wrapText="false">
+            <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Battle" textAlignment="CENTER" wrapText="false">
               <font>
                 <Font size="18.0" fx:id="x1" />
               </font>
               <textFill>
-                <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
+                <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
               </textFill>
             </Label>
+                  <TextField layoutX="73.0" layoutY="47.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="73.0" layoutY="78.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="74.0" layoutY="197.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="74.0" layoutY="228.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="75.0" layoutY="375.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="75.0" layoutY="406.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="75.0" layoutY="439.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="75.0" layoutY="470.0" prefHeight="25.0" prefWidth="132.0" />
+                  <TextField layoutX="75.0" layoutY="503.0" prefHeight="25.0" prefWidth="132.0" />
+                  <Label layoutX="27.0" layoutY="51.0" text="Rows" />
+                  <Label layoutX="18.0" layoutY="82.0" text="Columns" />
+                  <Button layoutX="83.0" layoutY="113.0" mnemonicParsing="false" text="Create new battle!" />
+                  <TextField layoutX="74.0" layoutY="261.0" prefHeight="25.0" prefWidth="132.0" />
+                  <Label layoutX="25.0" layoutY="201.0" text="Symbol" />
+                  <Label layoutX="29.0" layoutY="232.0" text="Name" />
+                  <Label layoutX="28.0" layoutY="265.0" text="Health" />
+                  <Label alignment="CENTER" layoutX="16.0" layoutY="165.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="PredaCon" textAlignment="CENTER" wrapText="false">
+                     <font>
+                        <Font size="18.0" fx:id="x11" />
+                     </font>
+                     <textFill>
+                        <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
+                     </textFill>
+                  </Label>
+                  <Label layoutX="27.0" layoutY="378.0" text="Symbol" />
+                  <Label layoutX="31.0" layoutY="409.0" text="Name" />
+                  <Label layoutX="30.0" layoutY="442.0" text="Health" />
+                  <Label layoutX="28.0" layoutY="475.0" text="Symbol" />
+                  <Label layoutX="32.0" layoutY="506.0" text="Name" />
+                  <Label alignment="CENTER" layoutX="16.0" layoutY="342.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Maximal" textAlignment="CENTER" wrapText="false">
+                     <font>
+                        <Font size="18.0" fx:id="x111" />
+                     </font>
+                     <textFill>
+                        <Color red="0.624" green="0.624" blue="0.624" fx:id="x211" />
+                     </textFill>
+                  </Label>
+                  <RadioButton layoutX="103.0" layoutY="170.0" mnemonicParsing="false" />
+                  <RadioButton layoutX="93.0" layoutY="347.0" mnemonicParsing="false" />
+
+                  <Label layoutX="15.0" layoutY="294.0" text="WeaponType" />
           </children>
         </AnchorPane>
         <ScrollPane prefHeight="-1.0" prefWidth="-1.0">
@@ -86,7 +103,7 @@
             <Font size="11.0" fx:id="x3" />
           </font>
           <textFill>
-            <Color blue="0.625" green="0.625" red="0.625" fx:id="x4" />
+            <Color red="0.625" green="0.625" blue="0.625" fx:id="x4" />
           </textFill>
         </Label>
         <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
