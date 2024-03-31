@@ -17,4 +17,14 @@ public class MainController {
     public void initialize() {
 
     }
+
+    @FXML
+    public void loadNewBattle() {
+
+    }
+
+    @FXML
+    public void saveNewBattle() {
+
+    }
 }
