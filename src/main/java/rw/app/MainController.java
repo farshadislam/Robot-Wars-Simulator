@@ -1,17 +1,17 @@
+/**
+ * Author: Farshad Islam
+ * Tutorial: 07
+ * Tuesday, April 2nd, 2024
+ **/
+
 package rw.app;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import java.io.File;
 import javafx.stage.Stage;
@@ -25,7 +25,7 @@ public class MainController{
     private Battle battle;
 
     @FXML
-    private MenuItem battleSaver, battleLoader, battleHelper;
+    private MenuItem battleSaver, battleLoader;
 
     @FXML
     private ComboBox<String> comboBox;
@@ -146,72 +146,54 @@ public class MainController{
             newRowCount = Integer.parseInt(rowCounter.getText());
         } catch (NumberFormatException e) {
             errorStatus.setText("Cannot parse invalid row input: " + e.getMessage());
-            return; // Exit the method if parsing fails
+            return; // Exit method if parsing rowCounter fails
         }
 
         try {
             newColCount = Integer.parseInt(columnCounter.getText());
         } catch (NumberFormatException e) {
             errorStatus.setText("Cannot parse invalid column input: " + e.getMessage());
-            return;
+            return; // Exit method if parsing columnCounter fails
         }
 
-        if (newRowCount < 3 || newColCount < 3) {
-            errorStatus.setText("Battle arena size too small. Please re-enter.");
-            return; // Exit the method if size is too small
-        }
-
-        if (newRowCount > 8 || newColCount > 8) {
-            errorStatus.setText("Battle arena size too large. Please re-enter.");
-            return; // Exit the method if size is too large
-        }
-
-        // Clear existing content
+        // Clear whatever was drawn before to make room for new grid
         grid.getChildren().clear();
         anchorGridPane.getChildren().clear();
 
-        // Proceed with creating the new grid and buttons
-        grid = new GridPane();
-        buttons = new Button[newRowCount + 2][newColCount + 2];
-        battle = new Battle(newRowCount, newColCount);
-            errorStatus.setText(null);
-            grid.getChildren().clear();
-            anchorGridPane.getChildren().clear();
-            grid = new GridPane();
+        // Create a brand-new grid with the valid row and column values
 
-            buttons = new Button[newRowCount+2][newColCount+2];
+        buttons = new Button[newRowCount + 2][newColCount + 2]; // Reset array of buttons
+        battle = new Battle(newRowCount, newColCount); // Reset battle object
+        errorStatus.setText(null); // Remove any pre-existing error messages
 
-            battle = new Battle(newRowCount, newColCount);
+        grid = new GridPane(); // new GridPane
 
-            for (int gridRow = 0; gridRow < newRowCount+2; gridRow++) {
-                for (int gridCol = 0; gridCol < newColCount+2; gridCol++) {
-                    String buttonText = "";
-                    if (gridRow == 0 || gridCol == 0 || gridRow == newRowCount+1 || gridCol == newColCount+1) {
-                        buttonText = "#";
-                    }
-                    else {
-                        buttonText = null;
-                    }
-
-                    Button button = new Button(buttonText);
-                    button.setPrefSize(30,30);
-                    grid.add(button, gridCol, gridRow); // Swap the parameters to the correct order
-
-                    buttons[gridRow][gridCol] = button;
-                    int gridRowFR = gridRow;
-                    int gridColFR = gridCol;
-
-                    button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
+        for (int gridRow = 0; gridRow < newRowCount+2; gridRow++) {
+            for (int gridCol = 0; gridCol < newColCount+2; gridCol++) {
+                String buttonText = null; // Initialize button text
+                if (gridRow == 0 || gridCol == 0 || gridRow == newRowCount+1 || gridCol == newColCount+1) {
+                    buttonText = "#"; // Establishes a wall on top of the button
                 }
+
+                Button button = new Button(buttonText); // Creates button object with either null text or "#"
+                button.setPrefSize(30,30); // Preferred size for buttons
+                grid.add(button, gridCol, gridRow); // Add newly created button to space
+
+                buttons[gridRow][gridCol] = button;
+                int gridRowFR = gridRow;
+                int gridColFR = gridCol;
+
+                button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
             }
+        }
 
-            grid.setHgap(5);
-            grid.setVgap(5);
+        grid.setHgap(5);
+        grid.setVgap(5);
 
-            anchorGridPane.getChildren().add(grid);
+        anchorGridPane.getChildren().add(grid);
 
-            AnchorPane.setTopAnchor(grid, 10.0);
-            AnchorPane.setLeftAnchor(grid, 10.0);
+        AnchorPane.setTopAnchor(grid, 10.0);
+        AnchorPane.setLeftAnchor(grid, 10.0);
     }
 
     public void handleButtonClick(int buttonRow, int buttonCol) {

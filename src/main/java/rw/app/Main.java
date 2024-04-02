@@ -1,10 +1,12 @@
 package rw.app;
 
 import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
 
@@ -24,6 +26,7 @@ public class Main extends Application {
         //Students edit here to set up the scene
 
         stage.setTitle("Robot Wars World Editor (v" + version + ")");
+
         stage.setScene(scene);
         stage.show();
     }
