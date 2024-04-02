@@ -37,7 +37,7 @@ public class MainController{
     private Alert popup = new Alert(Alert.AlertType.NONE);
 
     @FXML
-    private TextField rowCounter, columnCounter;
+    private TextField rowCounter, columnCounter, getPredaConSymbol, getPredaConName, getPredaConHealth;
 
     @FXML
     private Label errorStatus;
@@ -68,6 +68,8 @@ public class MainController{
 
         buttons = new Button[numRows][numCols];
 
+        battle = new Battle(numRows, numCols);
+
         for (int gridRow = 0; gridRow < numRows; gridRow++) {
             for (int gridCol = 0; gridCol < numCols; gridCol++) {
                 Button button = new Button();
@@ -89,8 +91,6 @@ public class MainController{
         grid.setVgap(5);
 
         anchorGridPane.getChildren().add(grid);
-
-
 
         // Optionally, set the GridPane to anchor at all four sides to fill the AnchorPane.
         AnchorPane.setTopAnchor(grid, 10.0);
@@ -137,10 +137,6 @@ public class MainController{
         return WeaponType.getWeaponType(comboSelect);
     }
 
-    public String getChoiceRobotBattle() {
-        return null;
-    }
-
     @FXML
     public void drawBattleField() {
         int newRowCount = 0;
@@ -149,53 +145,96 @@ public class MainController{
         try {
             newRowCount = Integer.parseInt(rowCounter.getText());
         } catch (NumberFormatException e) {
-            errorStatus.setText("Can't parse invalid integer row input: " + rowCounter.getText());
+            errorStatus.setText("Cannot parse invalid row input: " + e.getMessage());
+            return; // Exit the method if parsing fails
         }
 
         try {
             newColCount = Integer.parseInt(columnCounter.getText());
         } catch (NumberFormatException e) {
-            errorStatus.setText("Can't parse invalid integer column input: " + columnCounter.getText());
+            errorStatus.setText("Cannot parse invalid column input: " + e.getMessage());
+            return;
         }
 
+        if (newRowCount < 3 || newColCount < 3) {
+            errorStatus.setText("Battle arena size too small. Please re-enter.");
+            return; // Exit the method if size is too small
+        }
+
+        if (newRowCount > 8 || newColCount > 8) {
+            errorStatus.setText("Battle arena size too large. Please re-enter.");
+            return; // Exit the method if size is too large
+        }
+
+        // Clear existing content
         grid.getChildren().clear();
         anchorGridPane.getChildren().clear();
+
+        // Proceed with creating the new grid and buttons
         grid = new GridPane();
+        buttons = new Button[newRowCount + 2][newColCount + 2];
+        battle = new Battle(newRowCount, newColCount);
+            errorStatus.setText(null);
+            grid.getChildren().clear();
+            anchorGridPane.getChildren().clear();
+            grid = new GridPane();
 
-        for (int gridRow = 0; gridRow < newRowCount+2; gridRow++) {
-            for (int gridCol = 0; gridCol < newColCount+2; gridCol++) {
-                String buttonText = "";
-                if (gridRow == 0 || gridCol == 0 || gridRow == newRowCount+1 || gridCol == newColCount+1) {
-                    buttonText = "#";
+            buttons = new Button[newRowCount+2][newColCount+2];
+
+            battle = new Battle(newRowCount, newColCount);
+
+            for (int gridRow = 0; gridRow < newRowCount+2; gridRow++) {
+                for (int gridCol = 0; gridCol < newColCount+2; gridCol++) {
+                    String buttonText = "";
+                    if (gridRow == 0 || gridCol == 0 || gridRow == newRowCount+1 || gridCol == newColCount+1) {
+                        buttonText = "#";
+                    }
+                    else {
+                        buttonText = null;
+                    }
+
+                    Button button = new Button(buttonText);
+                    button.setPrefSize(30,30);
+                    grid.add(button, gridCol, gridRow); // Swap the parameters to the correct order
+
+                    buttons[gridRow][gridCol] = button;
+                    int gridRowFR = gridRow;
+                    int gridColFR = gridCol;
+
+                    button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
                 }
-                else {
-                    buttonText = null;
-                }
-
-                Button button = new Button(buttonText);
-                button.setPrefSize(30,30);
-                grid.add(button, gridCol, gridRow); // Swap the parameters to the correct order
-
-                buttons[gridRow][gridCol] = button;
-                int gridRowFR = gridRow;
-                int gridColFR = gridCol;
-
-                button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
             }
-        }
 
-        grid.setHgap(5);
-        grid.setVgap(5);
+            grid.setHgap(5);
+            grid.setVgap(5);
 
-        anchorGridPane.getChildren().add(grid);
+            anchorGridPane.getChildren().add(grid);
 
-        AnchorPane.setTopAnchor(grid, 10.0);
-        AnchorPane.setLeftAnchor(grid, 10.0);
+            AnchorPane.setTopAnchor(grid, 10.0);
+            AnchorPane.setLeftAnchor(grid, 10.0);
     }
 
     public void handleButtonClick(int buttonRow, int buttonCol) {
         Button buttonClicked = buttons[buttonRow][buttonCol];
 
-        // yada yada yada
+        if (radioMaximal.isSelected()) {
+            char predaConSymbol;
+
+            if (buttonClicked.getText().equals("#")) {
+                errorStatus.setText("Cannot place robot on top of a wall!");
+            }
+
+            try {
+                predaConSymbol = getPredaConSymbol.getText().charAt(0);
+            } catch (IllegalArgumentException e) {
+                errorStatus.setText("Invalid symbol input for PredaCon: " + getPredaConSymbol.getText());
+            }
+        }
+
+        if (radioPredaCon.isSelected()) {
+            if (buttonClicked.getText().equals("#")) {
+                errorStatus.setText("Cannot place robot on top of a wall!");
+            }
+        }
     }
 }
