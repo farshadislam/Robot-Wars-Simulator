@@ -111,7 +111,7 @@
         <AnchorPane>
           <children>
             <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="7.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-                  <TextArea layoutX="14.0" layoutY="34.0" prefHeight="200.0" prefWidth="200.0" />
+                  <TextArea fx:id="displayButtonInfo" layoutX="14.0" layoutY="34.0" prefHeight="200.0" prefWidth="200.0" />
           </children>
         </AnchorPane>
       </items>
