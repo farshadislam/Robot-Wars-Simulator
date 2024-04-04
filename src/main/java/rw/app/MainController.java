@@ -66,7 +66,6 @@ public class MainController{
     /**
      * Initializes code before user does any kind of input
      *
-     * @param N/A
      * @returns N/A
      */
     @FXML
@@ -79,7 +78,7 @@ public class MainController{
     /**
      * Builds an interactable visual representation of a Battle object
      *
-     * @param int numRows, int numCols
+     * @params numRows, numCols
      * @returns N/A
      */
     private void createGrid(int numRows, int numCols) {
@@ -128,7 +127,6 @@ public class MainController{
     /**
      * Loads a file from directory and draws a grid from it
      *
-     * @param N/A
      * @returns N/A
      */
     @FXML
@@ -161,7 +159,6 @@ public class MainController{
     /**
      * Causes status messages related to file saving/loading to vanish soon after being displayed
      *
-     * @param N/A
      * @returns N/A
      */
     private void fadeOutfileStatus() {
@@ -178,7 +175,6 @@ public class MainController{
     /**
      * Performs the act of drawing over the GridPane with all the available Battle entities
      *
-     * @param N/A
      * @returns N/A
      */
     private void updateGridPostLoad() {
@@ -203,7 +199,6 @@ public class MainController{
     /**
      * Saves a battle to be loaded from a separate file
      *
-     * @param N/A
      * @returns N/A
      */
     @FXML
@@ -245,7 +240,6 @@ public class MainController{
     /**
      * Quits out of the program both from JavaFX and the console
      *
-     * @param N/A
      * @returns N/A
      */
     @FXML
@@ -257,7 +251,6 @@ public class MainController{
     /**
      * Displays information about the user and what the code's functionality is
      *
-     * @param N/A
      * @returns N/A
      */
     @FXML
@@ -272,7 +265,6 @@ public class MainController{
     /**
      * Saves a battle to be loaded from a separate file
      *
-     * @param N/A
      * @return WeaponType of the entity requested (should it be a PredaCon object)
      */
     @FXML
@@ -284,7 +276,6 @@ public class MainController{
     /**
      * Draws a brand-new grid from user-entered rows and columns
      *
-     * @param N/A
      * @return N/A
      */
     @FXML
@@ -317,7 +308,7 @@ public class MainController{
     /**
      * Behaviour for when the cursor hovers over a button
      *
-     * @param Button buttonHovered, int gridRowFR, int gridColFR
+     * @params buttonHovered, gridRowFR, gridColFR
      * @returns N/A
      */
     private void handleMouseEntry(Button buttonHovered, int gridRowFR, int gridColFR) {
@@ -368,7 +359,7 @@ public class MainController{
     /**
      * Behaviour for when a button gets clicked
      *
-     * @param int buttonRow, int buttonCol
+     * @param buttonRow, buttonCol
      * @returns N/A
      */
     public void handleButtonClick(int buttonRow, int buttonCol) {
@@ -395,7 +386,7 @@ public class MainController{
     /**
      * Places valid PredaCon in the GridPane and also to battle
      *
-     * @param Button buttonClicked, int row, int column
+     * @param buttonClicked, row, column
      * @returns N/A
      */
     private void placePredaCon(Button buttonClicked, int row, int column) {
@@ -437,7 +428,7 @@ public class MainController{
     /**
      * Places Maximal robot in grid and battle
      *
-     * @param Button buttonClicked, int row, int column
+     * @params buttonClicked, row, column
      * @returns N/A
      */
     private void placeMaximal(Button buttonClicked, int row, int column) {
