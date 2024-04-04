@@ -15,6 +15,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
 import rw.battle.*;
 import rw.enums.WeaponType;
 import rw.util.Reader;
@@ -31,7 +33,11 @@ public class MainController{
 
     private Button[][] buttons;
 
-    private File mainBattleFile;
+    private File mainBattleFile = new File("./saved-battle.txt");
+
+    FileChooser fileChooser = new FileChooser();
+
+    HashSet<String> symbols = new HashSet<>();
 
     // All attributes created in SceneBuilder that are used directly from where they exist in Main.fxml
     @FXML
@@ -59,8 +65,6 @@ public class MainController{
     /**
      * Set up the window state
      */
-
-    FileChooser fileChooser = new FileChooser();
 
 
     /**
@@ -222,18 +226,37 @@ public class MainController{
         }
     }
 
+//    @FXML
+//    public void saveNewBattle() {
+//        if (mainBattleFile != null) {
+//            try {
+//                Writer.saveBattle(battle, mainBattleFile);
+//                fileStatus.setText("Battle saved successfully!");
+//                fadeOutfileStatus();
+//            } catch (Exception e) {
+//                fileStatus.setText("Battle could not be saved successfully.");
+//            }
+//        } else {
+//            saveAsNewBattle();
+//        }
+//    }
+
     @FXML
     public void saveNewBattle() {
-        if (mainBattleFile != null) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Battle File");
+
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
             try {
-                Writer.saveBattle(battle, mainBattleFile);
+                Writer.saveBattle(battle, file);
                 fileStatus.setText("Battle saved successfully!");
                 fadeOutfileStatus();
             } catch (Exception e) {
-                fileStatus.setText("Battle could not be saved successfully.");
+                fileStatus.setText("Battle was not saved successfully.");
+                fadeOutfileStatus();
             }
-        } else {
-            saveAsNewBattle();
         }
     }
 
@@ -395,6 +418,13 @@ public class MainController{
         int predaConHealth;
         WeaponType predaConWeaponType;
 
+        if (symbols.contains(getPredaConSymbol.getText())) {
+            errorStatus.setText("Must have a unique symbol!");
+            return;
+        } else {
+            symbols.add(getPredaConSymbol.getText());
+        }
+
         if (getPredaConSymbol.getText().length() > 1 || getPredaConSymbol.getText().isEmpty()) { // Gets char for symbol
             errorStatus.setText("Invalid character input for PredaCon symbol!");
             return;
@@ -437,6 +467,13 @@ public class MainController{
         int maximalHealth;
         int maximalAttack;
         int maximalArmour;
+
+        if (symbols.contains(getMaximalSymbol.getText())) {
+            errorStatus.setText("Must have a unique symbol!");
+            return;
+        } else {
+            symbols.add(getMaximalSymbol.getText());
+        }
 
         if (getMaximalSymbol.getText().length() > 1 || getMaximalSymbol.getText().isEmpty()) { // Same as placePredaCon
             errorStatus.setText("Invalid character input for Maximal symbol!");

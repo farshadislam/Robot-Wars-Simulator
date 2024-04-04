@@ -1,1 +1,10 @@
 Arguments: [battle.txt, log.txt, 12345]
+#####
+#P..#
+#...#
+##.O#
+#####
+NAME   	S	H	STATE	INFO
+Pred(1)	P	PredaKing	10	ALIVE	CLAWS
+Maxi(2)	O	Optimus Primal	10	ALIVE	3	1
+
