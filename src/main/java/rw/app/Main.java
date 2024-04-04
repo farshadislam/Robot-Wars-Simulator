@@ -1,12 +1,9 @@
 package rw.app;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
 
