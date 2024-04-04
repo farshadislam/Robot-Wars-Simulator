@@ -15,10 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import rw.battle.*;
 import rw.enums.WeaponType;
 import rw.util.Reader;
@@ -28,12 +24,16 @@ import rw.util.Writer;
 
 public class MainController{
 
-    //Store the data of editor
+    // All instance variables required for proper code functionality
     private Battle battle;
 
-    @FXML
-    private MenuItem battleSaver, battleLoader;
+    private GridPane grid = new GridPane();
 
+    private Button[][] buttons;
+
+    private File mainBattleFile;
+
+    // All attributes created in SceneBuilder that are used directly from where they exist in Main.fxml
     @FXML
     private ComboBox<String> comboBox;
 
@@ -55,11 +55,6 @@ public class MainController{
     @FXML
     private AnchorPane anchorGridPane = new AnchorPane();
 
-    private GridPane grid = new GridPane();
-
-    private Button[][] buttons;
-
-    private File mainBattleFile;
 
     /**
      * Set up the window state
@@ -67,29 +62,40 @@ public class MainController{
 
     FileChooser fileChooser = new FileChooser();
 
+
+    /**
+     * Initializes code before user does any kind of input
+     *
+     * @param N/A
+     * @returns N/A
+     */
     @FXML
     public void initialize() {
-        comboBox.setItems(FXCollections.observableArrayList("Claws (C)", "Teeth (T)", "Lasers (L)"));
-        anchorGridPane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        createGrid(3, 3);
+        comboBox.setItems(FXCollections.observableArrayList("Claws (C)", "Teeth (T)", "Lasers (L)")); // Establishing comboBox
+        anchorGridPane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE); // AnchorPane parameters
+        createGrid(3, 3); // Initial grid
     }
 
+    /**
+     * Builds an interactable visual representation of a Battle object
+     *
+     * @param int numRows, int numCols
+     * @returns N/A
+     */
     private void createGrid(int numRows, int numCols) {
-        grid.getChildren().clear();
+        grid.getChildren().clear(); // Clears GridPane and AnchorPane every time a new grid is created
         anchorGridPane.getChildren().clear();
 
-        // Create a brand-new grid with the valid row and column values
-
-        buttons = new Button[numRows + 2][numCols + 2]; // Reset array of buttons
-        battle = new Battle(numRows, numCols); // Reset battle object
+        buttons = new Button[numRows + 2][numCols + 2]; // Resets button array to create a perimeter around actual battle array
+        battle = new Battle(numRows, numCols); // Resets battle object to be iterated over
         errorStatus.setText(null); // Remove any pre-existing error messages
-        grid = new GridPane(); // new GridPane
+        grid = new GridPane(); // new GridPane made to have modified by...
 
         for (int gridRow = 0; gridRow < numRows+2; gridRow++) {
-            for (int gridCol = 0; gridCol < numCols+2; gridCol++) {
-                String buttonText = null; // Initialize button text
+            for (int gridCol = 0; gridCol < numCols+2; gridCol++) { // Iterating through every possible position in grid
+                String buttonText = null; // Initializes button text
                 if (gridRow == 0 || gridCol == 0 || gridRow == numRows+1 || gridCol == numCols+1) {
-                    buttonText = "#"; // Establishes a wall on top of the button
+                    buttonText = "#"; // Establishes a wall where an interactable button would have been
                 }
 
                 Button button = new Button(buttonText); // Creates button object with either null text or "#"
@@ -97,18 +103,19 @@ public class MainController{
                 button.setPrefSize(30,30); // Preferred size for buttons
                 grid.add(button, gridCol, gridRow); // Add newly created button to space
 
-                buttons[gridRow][gridCol] = button;
-                int gridRowFR = gridRow;
+                buttons[gridRow][gridCol] = button; // Places newly created button in a 2D array of buttons (all clickable inside perimeter)
+                int gridRowFR = gridRow; // Bypassing need for finality with integer variables
                 int gridColFR = gridCol;
 
-                button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
+                button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR)); // What happens when a button is clicked
 
-                button.setOnMouseExited(event -> displayButtonInfo.setText(null));
+                button.setOnMouseEntered(event -> handleMouseEntry(button, gridRowFR, gridColFR)); // What happens when you hover over a button (displayButtonInfo becomes blank)
 
-                button.setOnMouseEntered(event -> handleMouseEntry(button, gridRowFR, gridColFR));
+                button.setOnMouseExited(event -> displayButtonInfo.setText(null)); // What happens when you leave a button after hovering over it
             }
         }
 
+        // Remaining visual touch-ups
         grid.setHgap(5);
         grid.setVgap(5);
 
@@ -118,57 +125,73 @@ public class MainController{
         AnchorPane.setLeftAnchor(grid, 10.0);
     }
 
+    /**
+     * Loads a file from directory and draws a grid from it
+     *
+     * @param N/A
+     * @returns N/A
+     */
     @FXML
     public void loadNewBattle() {
-        fileChooser = new FileChooser();
+        fileChooser = new FileChooser(); // Initialization
 
-        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("TEXT files (*.txt)", "*.txt");
+        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("TEXT files (*.txt)", "*.txt"); // Only loads .txt files
         fileChooser.getExtensionFilters().add(filter);
 
-        File file = fileChooser.showOpenDialog(grid.getScene().getWindow());
+        File file = fileChooser.showOpenDialog(grid.getScene().getWindow()); // Allows users to open files from OS
 
-        if (file != null) {
-            mainBattleFile = file;
-
+        if (file != null) { // Makes sure that the file is empty
             try {
-                battle =  Reader.loadBattle(file);
-                createGrid(battle.getRows(), battle.getColumns());
-                battle =  Reader.loadBattle(file);
-                updateGridPostLoad();
+                mainBattleFile = file; // Sets current JavaFX file to file being loaded
+                battle =  Reader.loadBattle(file); // Change battle
+                createGrid(battle.getRows(), battle.getColumns()); // Create grid with same dimensions as battle
+                battle =  Reader.loadBattle(file); // Remind program of what attributes exist in battle
+                updateGridPostLoad(); // Draw over everything in the GridPane so that it accurately depicts what was written in battle
 
-                fileStatus.setText("Battle successfully loaded!");
+                fileStatus.setText("Battle successfully loaded!"); // Success message
                 fadeOutfileStatus();
             } catch (Exception e) {
-                fileStatus.setText("Could not successfully load file.");
+                fileStatus.setText("Could not successfully load file."); // Failure message
                 fadeOutfileStatus();
             }
 
         }
     }
 
+    /**
+     * Causes status messages related to file saving/loading to vanish soon after being displayed
+     *
+     * @param N/A
+     * @returns N/A
+     */
     private void fadeOutfileStatus() {
-        // Create a FadeTransition with specified duration
-        FadeTransition ft = new FadeTransition(Duration.seconds(3), fileStatus);
+        FadeTransition ft = new FadeTransition(Duration.seconds(3), fileStatus); // Initialize transition object
 
-        ft.setFromValue(1.0);
-        ft.setToValue(0.0);
-        ft.setCycleCount(1); // Play once
+        ft.setFromValue(1.0); // Start at this time
+        ft.setToValue(0.0); // End at this time
+        ft.setCycleCount(1); // Play (only) once
 
-        ft.play();
+        ft.play(); // Gawk at how beautifully crafted this is to look at
     }
 
 
+    /**
+     * Performs the act of drawing over the GridPane with all the available Battle entities
+     *
+     * @param N/A
+     * @returns N/A
+     */
     private void updateGridPostLoad() {
         for (int loadRow = 0; loadRow < battle.getRows(); loadRow++) {
-            for (int loadCol = 0; loadCol < battle.getColumns(); loadCol++) {
-                Entity entity = battle.getEntity(loadRow, loadCol);
+            for (int loadCol = 0; loadCol < battle.getColumns(); loadCol++) { // Iterates through every battle index
+                Entity entity = battle.getEntity(loadRow, loadCol); // Sets battle index to an object (possibly null)
                 Button button = buttons[loadRow + 1][loadCol + 1]; // Offset by 1 to match button positions
 
-                if (entity instanceof Wall) {
+                if (entity instanceof Wall) { // Protocol for non-changeable Wall object found in battle besides perimeter
                     button.setText("#");
-                    button.setStyle("-fx-background-color: #D3D3D3;");
-                } else if (entity instanceof PredaCon || entity instanceof Maximal) {
-                    button.setText(String.valueOf(entity.getSymbol()));
+                    button.setStyle("-fx-background-color: #D3D3D3;"); // Different colouring from Robot buttons
+                } else if (entity instanceof PredaCon || entity instanceof Maximal) { // Protocol for interestingly interactable Robot entity in battle
+                    button.setText(String.valueOf(entity.getSymbol())); // Robot symbol appears on the face of the button representing its location
                 } else {
                     button.setText(""); // Clear the button if there is no entity
                 }
@@ -177,22 +200,27 @@ public class MainController{
     }
 
 
+    /**
+     * Saves a battle to be loaded from a separate file
+     *
+     * @param N/A
+     * @returns N/A
+     */
     @FXML
     public void saveAsNewBattle() {
-        fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Battle As...");
+        fileChooser = new FileChooser(); // Initialize
 
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
-        File newBattleFile = fileChooser.showSaveDialog(grid.getScene().getWindow());
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt")); // Save as only .txt type
+        File newBattleFile = fileChooser.showSaveDialog(grid.getScene().getWindow()); // Open OS
 
         if (newBattleFile != null) {
             try {
-                Writer.saveBattle(battle, newBattleFile);
-                mainBattleFile = newBattleFile;
-                fileStatus.setText("New battle saved!");
+                Writer.saveBattle(battle, newBattleFile); // Try to save a file using Writer.java
+                mainBattleFile = newBattleFile; // Set the current file to what is being saved
+                fileStatus.setText("New battle saved!"); // Success message that vanishes over time
                 fadeOutfileStatus();
-            } catch (Exception e) {
-                fileStatus.setText("Unable to save current battle.");
+            } catch (Exception e) { // In cases where the file cannot be saved
+                fileStatus.setText("Unable to save current battle."); // Failure message that vanishes over time
                 fadeOutfileStatus();
             }
 
@@ -214,41 +242,65 @@ public class MainController{
         }
     }
 
+    /**
+     * Quits out of the program both from JavaFX and the console
+     *
+     * @param N/A
+     * @returns N/A
+     */
     @FXML
     public void quitBattle() {
-        Platform.exit();
-        System.exit(0);
+        Platform.exit(); // Exit JavaFX
+        System.exit(0); // End process in console
     }
 
+    /**
+     * Displays information about the user and what the code's functionality is
+     *
+     * @param N/A
+     * @returns N/A
+     */
     @FXML
     public void aboutBattle() {
-        popup.setAlertType(Alert.AlertType.INFORMATION);
-        popup.setContentText("Author: Farshad Islam\nEmail: farshad.islam@ucalgary.ca\nVersion: v1.0\nThis code is meant to simulate a Robot Wars game.");
-        popup.setHeaderText("Ermmm... methinks this program is giving uber amounts of awesomesauce!!1!1");
-        popup.setTitle("We stan with Jonathan Hudson ∠(´д｀)");
-        popup.show();
+        popup.setAlertType(Alert.AlertType.INFORMATION); // Establish new window for alert to appear in
+        popup.setContentText("Author: Farshad Islam\nEmail: farshad.islam@ucalgary.ca\nVersion: v1.0\nThis code is meant to simulate a Robot Wars game."); // Standard info
+        popup.setHeaderText("Ermmm... methinks this program is giving uber amounts of awesomesauce!!1!1"); // Ramblings of a madman
+        popup.setTitle("We stan with Jonathan Hudson ∠(´д｀)"); // Needless idolizing
+        popup.show(); // Display embarrassing message
     }
 
+    /**
+     * Saves a battle to be loaded from a separate file
+     *
+     * @param N/A
+     * @return WeaponType of the entity requested (should it be a PredaCon object)
+     */
     @FXML
     WeaponType getWeaponTypeBattle() {
-        char comboSelect = comboBox.getValue().charAt(comboBox.getValue().length()-2);
-        return WeaponType.getWeaponType(comboSelect);
+        char comboSelect = comboBox.getValue().charAt(comboBox.getValue().length()-2); // Checks selected value of comboBox
+        return WeaponType.getWeaponType(comboSelect); // returns WeaponType associated with character representation
     }
 
+    /**
+     * Draws a brand-new grid from user-entered rows and columns
+     *
+     * @param N/A
+     * @return N/A
+     */
     @FXML
     public void drawBattleField() {
-        int newRowCount = 0;
-        int newColCount = 0;
+        int newRowCount;
+        int newColCount;
 
         try {
-            newRowCount = Integer.parseInt(rowCounter.getText());
+            newRowCount = Integer.parseInt(rowCounter.getText()); // Set integer to row number
         } catch (NumberFormatException e) {
             errorStatus.setText("Cannot parse invalid row input: " + e.getMessage());
             return; // Exit method if parsing rowCounter fails
         }
 
         try {
-            newColCount = Integer.parseInt(columnCounter.getText());
+            newColCount = Integer.parseInt(columnCounter.getText()); // Set integer to column number
         } catch (NumberFormatException e) {
             errorStatus.setText("Cannot parse invalid column input: " + e.getMessage());
             return; // Exit method if parsing columnCounter fails
@@ -256,120 +308,156 @@ public class MainController{
 
         if (newColCount <= 0 || newRowCount <= 0) {
             errorStatus.setText("Cannot create board with negative or zero row or column count");
-            return; // Exit method if parsing columnCounter fails
+            return; // Exit method if array indices are not valid
         }
 
-        // Clear whatever was drawn before to make room for new grid
-        createGrid(newRowCount, newColCount);
+        createGrid(newRowCount, newColCount); // Standard protocol when building a new grid (also drawing one)
     }
 
+    /**
+     * Behaviour for when the cursor hovers over a button
+     *
+     * @param Button buttonHovered, int gridRowFR, int gridColFR
+     * @returns N/A
+     */
     private void handleMouseEntry(Button buttonHovered, int gridRowFR, int gridColFR) {
         Entity battleSpace;
 
         if ("#".equals(buttonHovered.getText())) {
-            displayButtonInfo.setText("Cannot place robots here.");
+            displayButtonInfo.setText("Cannot place robots here."); // Prevents robots from being placed on top of walls
         }
 
         else {
             battleSpace = battle.getEntity(gridRowFR - 1, gridColFR - 1); // Adjusted for border
 
             if (battleSpace == null) {
-                displayButtonInfo.setText("Space currently empty. \nInitialize a robot to fill the space!");
+                displayButtonInfo.setText("Space currently empty. \nInitialize a robot to fill the space!"); // Tells user when they can spice up the board
             } else {
                 // Display more detailed information about the entity
-                String[] buttonInfo = battleSpace.toString().split("\t");
-                if (buttonInfo.length == 6) {
-                    predaConInfo(buttonInfo);
-                } else if (buttonInfo.length == 7) {
-                    maximalInfo(buttonInfo);
+                String[] buttonInfo = battleSpace.toString().split("\t"); // Creates array out of battleString that can be used for more consise info
+                if (buttonInfo.length == 6) { // PredaCon
+                    predaConInfo(buttonInfo); // Display symbol, name, health, and WeaponType
+                } else if (buttonInfo.length == 7) { // Maximal
+                    maximalInfo(buttonInfo); // Display symbol, name, health, attack and armour
                 }
             }
         }
 
     }
 
+    /**
+     * Tells user about the PredaCon robot they're inspecting
+     *
+     * @param pDetails
+     * @returns N/A
+     */
     private void predaConInfo(String[] pDetails) {
         displayButtonInfo.setText("Type: Predator\nSymbol: " + pDetails[1] + "\nName: " + pDetails[2] + "\nHealth: " + pDetails[3] + "\nWeaponType: " + pDetails[5]);
     }
 
+    /**
+     * Tells user about the Maximal robot they're inspecting
+     *
+     * @param mDetails
+     * @returns N/A
+     */
     private void maximalInfo(String[] mDetails) {
         displayButtonInfo.setText("Type: Maximal\nSymbol: " + mDetails[1] + "\nName: " + mDetails[2] + "\nHealth: " + mDetails[3] + "\nAttack: " + mDetails[5] + "\nArmour: " + mDetails[6]);
     }
 
+    /**
+     * Behaviour for when a button gets clicked
+     *
+     * @param int buttonRow, int buttonCol
+     * @returns N/A
+     */
     public void handleButtonClick(int buttonRow, int buttonCol) {
-        Button buttonClicked = buttons[buttonRow][buttonCol];
-        String buttonText = buttonClicked.getText();
+        Button buttonClicked = buttons[buttonRow][buttonCol]; // Identifying clicked button
+        String buttonText = buttonClicked.getText(); // Checking text on the button
 
-        if ("#".equals(buttonText)) {
-            errorStatus.setText("Cannot place robot on top of a wall!");
+        if ("#".equals(buttonText)) { // Wall
+            errorStatus.setText("Cannot place robot on top of a wall!"); // error message
         } else {
-            if (radioMaximal.isSelected()) {
-                placeMaximal(buttonClicked, buttonRow, buttonCol);
+            if (radioMaximal.isSelected()) { // PredaCon
+                placeMaximal(buttonClicked, buttonRow, buttonCol); // Places PredaCon
 
-            } else if (radioPredaCon.isSelected()) {
-                placePredaCon(buttonClicked, buttonRow, buttonCol);
+            } else if (radioPredaCon.isSelected()) { // Maximal
+                placePredaCon(buttonClicked, buttonRow, buttonCol); // Places Maximal
             }
 
-            else {
-                buttonClicked.setText(null);
+            else { // Neither radio button being selected allows for the user to delete robots
+                buttonClicked.setText(null); // Clears text
+                battle.addEntity(buttonRow-1, buttonCol-1, null); // removes entity from the grid
             }
         }
     }
 
+    /**
+     * Places valid PredaCon in the GridPane and also to battle
+     *
+     * @param Button buttonClicked, int row, int column
+     * @returns N/A
+     */
     private void placePredaCon(Button buttonClicked, int row, int column) {
-        char predaConSymbol = 0;
+        char predaConSymbol = 0; // Initializing
         String predaConName;
         int predaConHealth;
         WeaponType predaConWeaponType;
 
-        if (getPredaConSymbol.getText().length() > 1) {
+        if (getPredaConSymbol.getText().length() > 1 || getPredaConSymbol.getText().isEmpty()) { // Gets char for symbol
             errorStatus.setText("Invalid character input for PredaCon symbol!");
             return;
         } else {
             predaConSymbol = getPredaConSymbol.getText().charAt(0);
         }
 
-        predaConName = getPredaConName.getText();
+        predaConName = getPredaConName.getText(); // Strings can be literally anything so no need for an error check
 
         try {
-            predaConHealth = Integer.parseInt(getPredaConHealth.getText());
+            predaConHealth = Integer.parseInt(getPredaConHealth.getText()); // Gets PredaCon health
         } catch (NumberFormatException e) {
             errorStatus.setText("Cannot parse health value for PredaCon: " + e.getMessage());
             return;
         }
 
         if (predaConHealth < 0) {
-            errorStatus.setText("Cannot set negative health for PredaCon!");
+            errorStatus.setText("Cannot set negative health for PredaCon!"); // No such thing as negative HP
             return;
         }
 
-        predaConWeaponType = getWeaponTypeBattle();
+        predaConWeaponType = getWeaponTypeBattle(); // Gets WeaponType
 
-        PredaCon predaCon = new PredaCon(predaConSymbol, predaConName, predaConHealth, predaConWeaponType);
-        battle.addEntity(row-1, column-1, predaCon);
-        buttonClicked.setText(String.valueOf(predaConSymbol));
-        radioPredaCon.setSelected(false);
-        errorStatus.setText(null);
+        PredaCon predaCon = new PredaCon(predaConSymbol, predaConName, predaConHealth, predaConWeaponType); // New PredaCon object
+        battle.addEntity(row-1, column-1, predaCon); // Add to battle
+        buttonClicked.setText(String.valueOf(predaConSymbol)); // Add to grid
+        radioPredaCon.setSelected(false); // Deselect radio button
+        errorStatus.setText(null); // Erase any previous error message
     }
 
+    /**
+     * Places Maximal robot in grid and battle
+     *
+     * @param Button buttonClicked, int row, int column
+     * @returns N/A
+     */
     private void placeMaximal(Button buttonClicked, int row, int column) {
-        char maximalSymbol;
+        char maximalSymbol; // Initializing
         String maximalName;
         int maximalHealth;
         int maximalAttack;
         int maximalArmour;
 
-        if (getMaximalSymbol.getText().length() > 1) {
+        if (getMaximalSymbol.getText().length() > 1 || getMaximalSymbol.getText().isEmpty()) { // Same as placePredaCon
             errorStatus.setText("Invalid character input for Maximal symbol!");
             return;
         } else {
             maximalSymbol = getMaximalSymbol.getText().charAt(0);
         }
 
-        maximalName = getMaximalName.getText();
+        maximalName = getMaximalName.getText(); // Same as placePredaCon
 
         try {
-            maximalHealth = Integer.parseInt(getMaximalHealth.getText());
+            maximalHealth = Integer.parseInt(getMaximalHealth.getText()); // Try to kill three birds with one stone
             maximalAttack = Integer.parseInt(getMaximalAttack.getText());
             maximalArmour = Integer.parseInt(getMaximalArmour.getText());
         } catch (NumberFormatException e) {
@@ -377,10 +465,10 @@ public class MainController{
             return;
         }
 
-        Maximal maximal = new Maximal(maximalSymbol, maximalName, maximalHealth, maximalAttack, maximalArmour);
-        battle.addEntity(row-1, column-1, maximal);
-        buttonClicked.setText(String.valueOf(maximalSymbol));
-        radioMaximal.setSelected(false);
-        errorStatus.setText(null);
+        Maximal maximal = new Maximal(maximalSymbol, maximalName, maximalHealth, maximalAttack, maximalArmour); // New Maximal object
+        battle.addEntity(row-1, column-1, maximal); // Add that bad boy to battle (while adjusting for differences from grid)
+        buttonClicked.setText(String.valueOf(maximalSymbol)); // Change look of buttonClicked
+        radioMaximal.setSelected(false); // Deselected radio button
+        errorStatus.setText(null); // Erase any previous error messages after everything successfully went through
     }
 }
