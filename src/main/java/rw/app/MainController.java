@@ -6,6 +6,7 @@
 
 package rw.app;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -17,7 +18,6 @@ import java.io.File;
 import javafx.stage.Stage;
 import rw.battle.*;
 import rw.enums.WeaponType;
-import rw.util.Writer;
 
 public class MainController{
 
@@ -37,7 +37,10 @@ public class MainController{
     private Alert popup = new Alert(Alert.AlertType.NONE);
 
     @FXML
-    private TextField rowCounter, columnCounter, getPredaConSymbol, getPredaConName, getPredaConHealth;
+    private TextField rowCounter, columnCounter, getPredaConSymbol, getPredaConName, getPredaConHealth, getMaximalName, getMaximalSymbol, getMaximalHealth, getMaximalAttack, getMaximalArmour;
+
+    @FXML
+    private TextArea displayButtonInfo;
 
     @FXML
     private Label errorStatus;
@@ -76,6 +79,7 @@ public class MainController{
                 button.setPrefSize(30,30);
                 if (gridRow == 0 || gridCol == 0 || gridRow == numRows-1 || gridCol == numCols-1) {
                     button.setText("#");
+                    button.setStyle("-fx-background-color: #D3D3D3;");
                 }
                 grid.add(button, gridCol, gridRow); // Swap the parameters to the correct order
 
@@ -84,6 +88,10 @@ public class MainController{
                 int gridColFR = gridCol;
 
                 button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
+
+                button.setOnMouseExited(event -> displayButtonInfo.setText(null));
+
+                button.setOnMouseEntered(event -> handleMouseEntry(gridRowFR, gridColFR));
             }
         }
 
@@ -114,14 +122,15 @@ public class MainController{
 
     @FXML
     public void quitBattle() {
-
+        Platform.exit();
+        System.exit(0);
     }
 
     @FXML
     public void aboutBattle() {
         popup.setAlertType(Alert.AlertType.INFORMATION);
         popup.setContentText("Author: Farshad Islam\nEmail: farshad.islam@ucalgary.ca\nVersion: v1.0\nThis code is meant to simulate a Robot Wars game.");
-        popup.setHeaderText("Erm... methinks this program is giving uber amounts of awesomesauce!!1!1");
+        popup.setHeaderText("Ermmm... methinks this program is giving uber amounts of awesomesauce!!1!1");
         popup.setTitle("We stan with Jonathan Hudson ∠(´д｀)");
         popup.show();
     }
@@ -156,6 +165,11 @@ public class MainController{
             return; // Exit method if parsing columnCounter fails
         }
 
+        if (newColCount <= 0 || newRowCount <= 0) {
+            errorStatus.setText("Cannot create board with negative or zero row or column count");
+            return; // Exit method if parsing columnCounter fails
+        }
+
         // Clear whatever was drawn before to make room for new grid
         grid.getChildren().clear();
         anchorGridPane.getChildren().clear();
@@ -176,6 +190,7 @@ public class MainController{
                 }
 
                 Button button = new Button(buttonText); // Creates button object with either null text or "#"
+                if ("#".equals(buttonText)) { button.setStyle("-fx-background-color: #D3D3D3;"); }
                 button.setPrefSize(30,30); // Preferred size for buttons
                 grid.add(button, gridCol, gridRow); // Add newly created button to space
 
@@ -184,6 +199,10 @@ public class MainController{
                 int gridColFR = gridCol;
 
                 button.setOnAction(event -> handleButtonClick(gridRowFR, gridColFR));
+
+                button.setOnMouseExited(event -> displayButtonInfo.setText(null));
+
+                button.setOnMouseEntered(event -> handleMouseEntry(gridRowFR, gridColFR));
             }
         }
 
@@ -196,27 +215,105 @@ public class MainController{
         AnchorPane.setLeftAnchor(grid, 10.0);
     }
 
+    private void handleMouseEntry(int gridRowFR, int gridColFR) {
+        Entity battleSpace;
+
+        if (gridRowFR == 0 || gridColFR == 0 || gridColFR == battle.getColumns()+1 || gridRowFR == battle.getRows()+1) {
+            displayButtonInfo.setText("Cannot place robots here.");
+        }
+
+        else {
+            battleSpace = battle.getEntity(gridRowFR - 1, gridColFR - 1); // Adjusted for border
+
+            if (battleSpace == null) {
+                displayButtonInfo.setText("Space currently empty. \nInitialize a robot to fill the space!");
+            } else {
+                // Display more detailed information about the entity
+                displayButtonInfo.setText(battleSpace.toString()); // Assuming toString() method provides meaningful information
+            }
+        }
+
+    }
+
     public void handleButtonClick(int buttonRow, int buttonCol) {
         Button buttonClicked = buttons[buttonRow][buttonCol];
+        String buttonText = buttonClicked.getText();
 
-        if (radioMaximal.isSelected()) {
-            char predaConSymbol;
+        if ("#".equals(buttonText)) {
+            errorStatus.setText("Cannot place robot on top of a wall!");
+        } else {
+            if (radioMaximal.isSelected()) {
+                placeMaximal(buttonClicked, buttonRow, buttonCol);
 
-            if (buttonClicked.getText().equals("#")) {
-                errorStatus.setText("Cannot place robot on top of a wall!");
-            }
-
-            try {
-                predaConSymbol = getPredaConSymbol.getText().charAt(0);
-            } catch (IllegalArgumentException e) {
-                errorStatus.setText("Invalid symbol input for PredaCon: " + getPredaConSymbol.getText());
+            } else if (radioPredaCon.isSelected()) {
+                placePredaCon(buttonClicked, buttonRow, buttonCol);
             }
         }
+    }
 
-        if (radioPredaCon.isSelected()) {
-            if (buttonClicked.getText().equals("#")) {
-                errorStatus.setText("Cannot place robot on top of a wall!");
-            }
+    private void placePredaCon(Button buttonClicked, int row, int column) {
+        char predaConSymbol;
+        String predaConName;
+        int predaConHealth;
+        WeaponType predaConWeaponType;
+
+        try {
+            predaConSymbol = getPredaConSymbol.getText().charAt(0);
+        } catch (IllegalArgumentException e) {
+            errorStatus.setText("Invalid symbol for PredaCon: " + e.getMessage());
+            return;
         }
+
+        predaConName = getPredaConName.getText();
+
+        try {
+            predaConHealth = Integer.parseInt(getPredaConHealth.getText());
+        } catch (NumberFormatException e) {
+            errorStatus.setText("Cannot parse health value for PredaCon: " + e.getMessage());
+            return;
+        }
+
+        if (predaConHealth < 0) {
+            errorStatus.setText("Cannot set negative health for PredaCon!");
+            return;
+        }
+
+        predaConWeaponType = getWeaponTypeBattle();
+
+        PredaCon predaCon = new PredaCon(predaConSymbol, predaConName, predaConHealth, predaConWeaponType);
+        battle.addEntity(row-1, column-1, predaCon);
+        buttonClicked.setText(String.valueOf(predaConSymbol));
+        radioPredaCon.setSelected(false);
+    }
+
+    private void placeMaximal(Button buttonClicked, int row, int column) {
+        char maximalSymbol;
+        String maximalName;
+        int maximalHealth;
+        int maximalAttack;
+        int maximalArmour;
+
+        try {
+            maximalSymbol = getMaximalSymbol.getText().charAt(0);
+        } catch (IllegalArgumentException e) {
+            errorStatus.setText("Invalid symbol for Maximal: " + e.getMessage());
+            return;
+        }
+
+        maximalName = getMaximalName.getText();
+
+        try {
+            maximalHealth = Integer.parseInt(getMaximalHealth.getText());
+            maximalAttack = Integer.parseInt(getMaximalAttack.getText());
+            maximalArmour = Integer.parseInt(getMaximalArmour.getText());
+        } catch (NumberFormatException e) {
+            errorStatus.setText("One or more invalid integer inputs for Maximal parameters: " + e.getMessage());
+            return;
+        }
+
+        Maximal maximal = new Maximal(maximalSymbol, maximalName, maximalHealth, maximalAttack, maximalArmour);
+        battle.addEntity(row-1, column-1, maximal);
+        buttonClicked.setText(String.valueOf(maximalSymbol));
+        radioMaximal.setSelected(false);
     }
 }
