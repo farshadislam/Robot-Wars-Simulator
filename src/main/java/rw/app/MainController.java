@@ -16,8 +16,9 @@ import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-import javafx.stage.Stage;
 import rw.battle.*;
 import rw.enums.WeaponType;
 import rw.util.Reader;
@@ -129,13 +130,19 @@ public class MainController{
         if (file != null) {
             mainBattleFile = file;
 
-            battle =  Reader.loadBattle(file);
-            createGrid(battle.getRows(), battle.getColumns());
-            battle =  Reader.loadBattle(file);
-            fileStatus.setText("Battle successfully loaded!");
-            fadeOutfileStatus();
+            try {
+                battle =  Reader.loadBattle(file);
+                createGrid(battle.getRows(), battle.getColumns());
+                battle =  Reader.loadBattle(file);
+                updateGridPostLoad();
 
-            updateGridPostLoad();
+                fileStatus.setText("Battle successfully loaded!");
+                fadeOutfileStatus();
+            } catch (Exception e) {
+                fileStatus.setText("Could not successfully load file.");
+                fadeOutfileStatus();
+            }
+
         }
     }
 
@@ -194,7 +201,17 @@ public class MainController{
 
     @FXML
     public void saveNewBattle() {
-
+        if (mainBattleFile != null) {
+            try {
+                Writer.saveBattle(battle, mainBattleFile);
+                fileStatus.setText("Battle saved successfully!");
+                fadeOutfileStatus();
+            } catch (Exception e) {
+                fileStatus.setText("Battle could not be saved successfully.");
+            }
+        } else {
+            saveAsNewBattle();
+        }
     }
 
     @FXML
@@ -260,10 +277,23 @@ public class MainController{
                 displayButtonInfo.setText("Space currently empty. \nInitialize a robot to fill the space!");
             } else {
                 // Display more detailed information about the entity
-                displayButtonInfo.setText(battleSpace.toString()); // Assuming toString() method provides meaningful information
+                String[] buttonInfo = battleSpace.toString().split("\t");
+                if (buttonInfo.length == 6) {
+                    predaConInfo(buttonInfo);
+                } else if (buttonInfo.length == 7) {
+                    maximalInfo(buttonInfo);
+                }
             }
         }
 
+    }
+
+    private void predaConInfo(String[] pDetails) {
+        displayButtonInfo.setText("Type: Predator\nSymbol: " + pDetails[1] + "\nName: " + pDetails[2] + "\nHealth: " + pDetails[3] + "\nWeaponType: " + pDetails[5]);
+    }
+
+    private void maximalInfo(String[] mDetails) {
+        displayButtonInfo.setText("Type: Maximal\nSymbol: " + mDetails[1] + "\nName: " + mDetails[2] + "\nHealth: " + mDetails[3] + "\nAttack: " + mDetails[5] + "\nArmour: " + mDetails[6]);
     }
 
     public void handleButtonClick(int buttonRow, int buttonCol) {
@@ -278,6 +308,10 @@ public class MainController{
 
             } else if (radioPredaCon.isSelected()) {
                 placePredaCon(buttonClicked, buttonRow, buttonCol);
+            }
+
+            else {
+                buttonClicked.setText(null);
             }
         }
     }
