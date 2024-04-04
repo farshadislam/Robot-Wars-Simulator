@@ -29,6 +29,7 @@
           <items>
             <MenuItem fx:id="battleLoader" mnemonicParsing="false" onAction="#loadNewBattle" text="Load" />
             <MenuItem fx:id="battleSaver" mnemonicParsing="false" onAction="#saveNewBattle" text="Save" />
+                  <MenuItem fx:id="saveAsBattle" mnemonicParsing="false" onAction="#saveAsNewBattle" text="Save As..." />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem fx:id="battleQuitter" mnemonicParsing="false" onAction="#quitBattle" text="Quit" />
           </items>
@@ -123,6 +124,7 @@
             <Font size="11.0" fx:id="x3" />
           </font>
         </Label>
+            <Label fx:id="fileStatus" maxHeight="1.7976931348623157E308" maxWidth="-1.0" textFill="BLUE" HBox.hgrow="ALWAYS" />
         <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
       </children>
       <padding>
