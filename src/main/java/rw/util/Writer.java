@@ -3,12 +3,13 @@ package rw.util;
 import rw.battle.*;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class Writer {
-   public static void saveBattle(Battle battle) {
+   public static void saveBattle(Battle battle, File file) {
        ArrayList<String> battleDetails = new ArrayList<>();
        battleDetails.add(String.valueOf(battle.getRows()));
        battleDetails.add(String.valueOf(battle.getColumns()));
@@ -35,9 +36,10 @@ public class Writer {
        }
 
        try {
-           BufferedWriter bw = new BufferedWriter(new FileWriter("new_battle.txt"));
+           BufferedWriter bw = new BufferedWriter(new FileWriter(file.getName()));
            for (String coordinateInfo : battleDetails) {
                bw.write(coordinateInfo);
+               bw.write("\n");
            }
            bw.close();
        } catch (IOException ex) {
