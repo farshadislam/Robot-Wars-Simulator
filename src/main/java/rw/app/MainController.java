@@ -15,10 +15,15 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import java.io.File;
+import java.io.IOException;
+
 import javafx.stage.Stage;
 import rw.battle.*;
 import rw.enums.WeaponType;
 import rw.util.Reader;
+import javafx.animation.FadeTransition;
+import javafx.util.Duration;
+import rw.util.Writer;
 
 public class MainController{
 
@@ -99,7 +104,7 @@ public class MainController{
 
                 button.setOnMouseExited(event -> displayButtonInfo.setText(null));
 
-                button.setOnMouseEntered(event -> handleMouseEntry(gridRowFR, gridColFR));
+                button.setOnMouseEntered(event -> handleMouseEntry(button, gridRowFR, gridColFR));
             }
         }
 
@@ -114,7 +119,7 @@ public class MainController{
 
     @FXML
     public void loadNewBattle() {
-        FileChooser fileChooser = new FileChooser();
+        fileChooser = new FileChooser();
 
         FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("TEXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(filter);
@@ -122,58 +127,74 @@ public class MainController{
         File file = fileChooser.showOpenDialog(grid.getScene().getWindow());
 
         if (file != null) {
-            try {
-                battle = Reader.loadBattle(file);
-                if (battle != null) {
-                    updateGridPostLoad();
-                    fileStatus.setText("Battle loaded successfully!");
+            mainBattleFile = file;
+
+            battle =  Reader.loadBattle(file);
+            createGrid(battle.getRows(), battle.getColumns());
+            battle =  Reader.loadBattle(file);
+            fileStatus.setText("Battle successfully loaded!");
+            fadeOutfileStatus();
+
+            updateGridPostLoad();
+        }
+    }
+
+    private void fadeOutfileStatus() {
+        // Create a FadeTransition with specified duration
+        FadeTransition ft = new FadeTransition(Duration.seconds(3), fileStatus);
+
+        ft.setFromValue(1.0);
+        ft.setToValue(0.0);
+        ft.setCycleCount(1); // Play once
+
+        ft.play();
+    }
+
+
+    private void updateGridPostLoad() {
+        for (int loadRow = 0; loadRow < battle.getRows(); loadRow++) {
+            for (int loadCol = 0; loadCol < battle.getColumns(); loadCol++) {
+                Entity entity = battle.getEntity(loadRow, loadCol);
+                Button button = buttons[loadRow + 1][loadCol + 1]; // Offset by 1 to match button positions
+
+                if (entity instanceof Wall) {
+                    button.setText("#");
+                    button.setStyle("-fx-background-color: #D3D3D3;");
+                } else if (entity instanceof PredaCon || entity instanceof Maximal) {
+                    button.setText(String.valueOf(entity.getSymbol()));
                 } else {
-                    fileStatus.setText("Battle could not be loaded.");
+                    button.setText(""); // Clear the button if there is no entity
                 }
-            } catch (Exception e) {
-                fileStatus.setText("Battle could not be loaded.");
             }
         }
     }
 
-    private void updateGridPostLoad() {
-        createGrid(battle.getRows(), battle.getColumns());
-        for (int battleRow = 0; battleRow < battle.getRows(); battleRow++) {
-            for (int battleCol = 0; battleCol < battle.getColumns(); battleCol++) {
-                Entity entity = battle.getEntity(battleRow, battleCol);
-                if (entity != null) {
-                    if (entity instanceof Wall) {
-                        buttons[battleRow+1][battleCol+1].setText("#");
-                        buttons[battleRow+1][battleCol+1].setStyle("-fx-background-color: #D3D3D3;");
-                    }
-                    else if (entity instanceof PredaCon || entity instanceof Maximal) {
-                        buttons[battleRow+1][battleCol+1].setText(String.valueOf(entity.getSymbol()));
-                    }
-                }
-            }
-        }
-    }
 
     @FXML
     public void saveAsNewBattle() {
-        FileChooser fileChooser = new FileChooser();
+        fileChooser = new FileChooser();
         fileChooser.setTitle("Save Battle As...");
 
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
-        File battleFile = fileChooser.showSaveDialog(grid.getScene().getWindow());
+        File newBattleFile = fileChooser.showSaveDialog(grid.getScene().getWindow());
 
-        if (battleFile != null) {
+        if (newBattleFile != null) {
+            try {
+                Writer.saveBattle(battle, newBattleFile);
+                mainBattleFile = newBattleFile;
+                fileStatus.setText("New battle saved!");
+                fadeOutfileStatus();
+            } catch (Exception e) {
+                fileStatus.setText("Unable to save current battle.");
+                fadeOutfileStatus();
+            }
 
         }
     }
 
     @FXML
     public void saveNewBattle() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(new File("."));
-        fileChooser.setInitialFileName("saved-battle.txt");
-        File fileSave = fileChooser.showSaveDialog(new Stage());
-        System.out.println(fileSave);
+
     }
 
     @FXML
@@ -189,11 +210,6 @@ public class MainController{
         popup.setHeaderText("Ermmm... methinks this program is giving uber amounts of awesomesauce!!1!1");
         popup.setTitle("We stan with Jonathan Hudson ∠(´д｀)");
         popup.show();
-    }
-
-    @FXML
-    public void weaponTypeBattle() {
-
     }
 
     @FXML
@@ -230,10 +246,10 @@ public class MainController{
         createGrid(newRowCount, newColCount);
     }
 
-    private void handleMouseEntry(int gridRowFR, int gridColFR) {
+    private void handleMouseEntry(Button buttonHovered, int gridRowFR, int gridColFR) {
         Entity battleSpace;
 
-        if (gridRowFR == 0 || gridColFR == 0 || gridColFR == battle.getColumns()+1 || gridRowFR == battle.getRows()+1) {
+        if ("#".equals(buttonHovered.getText())) {
             displayButtonInfo.setText("Cannot place robots here.");
         }
 
@@ -267,16 +283,16 @@ public class MainController{
     }
 
     private void placePredaCon(Button buttonClicked, int row, int column) {
-        char predaConSymbol;
+        char predaConSymbol = 0;
         String predaConName;
         int predaConHealth;
         WeaponType predaConWeaponType;
 
-        try {
-            predaConSymbol = getPredaConSymbol.getText().charAt(0);
-        } catch (IllegalArgumentException e) {
-            errorStatus.setText("Invalid symbol for PredaCon: " + e.getMessage());
+        if (getPredaConSymbol.getText().length() > 1) {
+            errorStatus.setText("Invalid character input for PredaCon symbol!");
             return;
+        } else {
+            predaConSymbol = getPredaConSymbol.getText().charAt(0);
         }
 
         predaConName = getPredaConName.getText();
@@ -299,6 +315,7 @@ public class MainController{
         battle.addEntity(row-1, column-1, predaCon);
         buttonClicked.setText(String.valueOf(predaConSymbol));
         radioPredaCon.setSelected(false);
+        errorStatus.setText(null);
     }
 
     private void placeMaximal(Button buttonClicked, int row, int column) {
@@ -308,11 +325,11 @@ public class MainController{
         int maximalAttack;
         int maximalArmour;
 
-        try {
-            maximalSymbol = getMaximalSymbol.getText().charAt(0);
-        } catch (IllegalArgumentException e) {
-            errorStatus.setText("Invalid symbol for Maximal: " + e.getMessage());
+        if (getMaximalSymbol.getText().length() > 1) {
+            errorStatus.setText("Invalid character input for Maximal symbol!");
             return;
+        } else {
+            maximalSymbol = getMaximalSymbol.getText().charAt(0);
         }
 
         maximalName = getMaximalName.getText();
@@ -330,5 +347,6 @@ public class MainController{
         battle.addEntity(row-1, column-1, maximal);
         buttonClicked.setText(String.valueOf(maximalSymbol));
         radioMaximal.setSelected(false);
+        errorStatus.setText(null);
     }
 }
