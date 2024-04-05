@@ -15,7 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import rw.battle.*;
 import rw.enums.WeaponType;
@@ -77,6 +76,9 @@ public class MainController{
         comboBox.setItems(FXCollections.observableArrayList("Claws (C)", "Teeth (T)", "Lasers (L)")); // Establishing comboBox
         anchorGridPane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE); // AnchorPane parameters
         createGrid(3, 3); // Initial grid
+        fileStatus.setText("Currently meant to save to 'saved-battle.txt..."); // Tells user where to save current battle
+        fadeOutfileStatus();
+        symbols = new HashSet<>(); // Prevents previous allotment of symbols from interfering with current iteration
     }
 
     /**
@@ -226,34 +228,23 @@ public class MainController{
         }
     }
 
-//    @FXML
-//    public void saveNewBattle() {
-//        if (mainBattleFile != null) {
-//            try {
-//                Writer.saveBattle(battle, mainBattleFile);
-//                fileStatus.setText("Battle saved successfully!");
-//                fadeOutfileStatus();
-//            } catch (Exception e) {
-//                fileStatus.setText("Battle could not be saved successfully.");
-//            }
-//        } else {
-//            saveAsNewBattle();
-//        }
-//    }
-
+    /**
+     * Overwrites a pre-existing .txt file with the current battle state
+     *
+     * @returns N/A
+     */
     @FXML
     public void saveNewBattle() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Battle File");
+        fileChooser = new FileChooser();
 
-        File file = fileChooser.showSaveDialog(null);
+        File file = fileChooser.showSaveDialog(null); // Open window to overwrite saved-battle.txt
 
         if (file != null) {
-            try {
+            try { // Success state
                 Writer.saveBattle(battle, file);
                 fileStatus.setText("Battle saved successfully!");
                 fadeOutfileStatus();
-            } catch (Exception e) {
+            } catch (Exception e) { // Fail state
                 fileStatus.setText("Battle was not saved successfully.");
                 fadeOutfileStatus();
             }
@@ -446,7 +437,12 @@ public class MainController{
             return;
         }
 
-        predaConWeaponType = getWeaponTypeBattle(); // Gets WeaponType
+        try {
+            predaConWeaponType = getWeaponTypeBattle(); // Gets WeaponType
+        } catch (NullPointerException e) {
+            errorStatus.setText("Must select a WeaponType before placing PredaCon!");
+            return;
+        }
 
         PredaCon predaCon = new PredaCon(predaConSymbol, predaConName, predaConHealth, predaConWeaponType); // New PredaCon object
         battle.addEntity(row-1, column-1, predaCon); // Add to battle

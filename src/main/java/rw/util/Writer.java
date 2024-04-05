@@ -56,7 +56,6 @@ public class Writer {
        } catch (IOException ex) {
            throw new RuntimeException(ex); // Take in exception if this process fails
        }
-
    }
 
 
