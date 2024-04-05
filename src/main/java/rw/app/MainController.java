@@ -62,11 +62,6 @@ public class MainController{
 
 
     /**
-     * Set up the window state
-     */
-
-
-    /**
      * Initializes code before user does any kind of input
      *
      * @returns N/A
@@ -290,7 +285,7 @@ public class MainController{
     /**
      * Draws a brand-new grid from user-entered rows and columns
      *
-     * @return N/A
+     * @returns N/A
      */
     @FXML
     public void drawBattleField() {
@@ -404,7 +399,7 @@ public class MainController{
      * @returns N/A
      */
     private void placePredaCon(Button buttonClicked, int row, int column) {
-        char predaConSymbol = 0; // Initializing
+        char predaConSymbol; // Initializing
         String predaConName;
         int predaConHealth;
         WeaponType predaConWeaponType;
