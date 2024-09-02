@@ -61,7 +61,12 @@ Placing Maximal: Users must select the Maximal radio button before writing its
 
 For either robot, once these fields are filled with valid fields, the user can
 click any non-wall space on the GridPane to add it. This deselects the radio button
-and will also prevent them from placing another robot with the same symbol.
+and will also prevent them from placing another robot with the same symbol. 
+
+### Removing robots
+
+With both PredaCon and Maximal radio buttons not selected, clicking on any active 
+grid space will remove the robot from the battle.
 
 ### Ending the program
 Users can end the program by going File -> Quit at the top left. This closes the window
@@ -76,3 +81,4 @@ and learn about the utility of the program in question.
 
 
 
+"# Robot-Wars-Simulator" 
