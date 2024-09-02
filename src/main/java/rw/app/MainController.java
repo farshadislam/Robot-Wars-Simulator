@@ -198,7 +198,7 @@ public class MainController{
 
 
     /**
-     * Saves a battle to be loaded from a separate file
+     * Saves a battle to be loaded from a separate file outside GUI
      *
      * @returns N/A
      */
